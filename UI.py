@@ -72,9 +72,28 @@ class UI:
         sys.exit(self.app.exec_())                                                                                                                                                  
 
     def portAction(self):
-        interfaces = QNetworkInterface()
-        self.resultWindow.addItem(interfaces)
+        cmd = "nmap -sT " + self.dstInput.text()
+        p = subprocess.Popen(cmd,  stdout=subprocess.PIPE,  stderr = subprocess.STDOUT,  shell = True)
         
+        
+        ports = []
+        
+        while True:
+            line = p.stdout.readline()
+            matchObj = re.search("[0-9][0-9]/tcp|[0-9][0-9][0-9]/tcp",  str(line))
+            if matchObj:
+                ports.append(str(matchObj.group()))
+            if not line:
+                break
+        
+        if ports:
+            self.resultWindow.addItem("The open TCP ports of the host " + self.dstInput.text() + " are:")
+            for port in ports:
+                self.resultWindow.addItem(port)
+                
+        else:
+            self.resultWindow.addItem("No TCP ports have been opening in the host " + self.dstInput.text())
+            
     def pingAction(self):
         
         cmd = "ping " +  self.dstInput.text() + " -c 4"
